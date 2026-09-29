@@ -1,0 +1,6 @@
+{
+  "name": "OmniSales - Small Business Sales & Order Intelligence",
+  "description": "Turn scattered WhatsApp orders, spreadsheets, and handwritten records into unified sales tracking, automated analytics, and AI-powered business decisions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
