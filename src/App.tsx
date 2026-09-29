@@ -10,6 +10,7 @@ import { AddOrderModal } from './components/AddOrderModal';
 import { OrderDetailModal } from './components/OrderDetailModal';
 
 const STORAGE_KEY = 'omnisales_orders_v1';
+const THEME_KEY = 'omnisales_theme_v1';
 
 export default function App() {
   const [orders, setOrders] = useState<Order[]>(() => {
@@ -25,6 +26,18 @@ export default function App() {
       console.error('Failed to load orders from localStorage:', e);
     }
     return initialOrders;
+  });
+
+  // Dark Mode Theme State
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === 'dark') return true;
+      if (saved === 'light') return false;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch {
+      return false;
+    }
   });
 
   // Filters & Search
@@ -48,7 +61,22 @@ export default function App() {
     }, 3500);
   };
 
-  // Sync to localStorage
+  // Sync dark theme to HTML element
+  useEffect(() => {
+    try {
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem(THEME_KEY, 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem(THEME_KEY, 'light');
+      }
+    } catch (e) {
+      console.error('Theme sync error:', e);
+    }
+  }, [isDark]);
+
+  // Sync orders to localStorage
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
@@ -152,28 +180,30 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50/80 text-stone-900 flex flex-col font-sans">
+    <div className="min-h-screen bg-stone-50/80 dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex flex-col font-sans transition-colors duration-200">
       {/* Toast Notice */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 bg-stone-900 text-stone-100 text-xs font-medium px-4 py-2.5 rounded-lg shadow-lg border border-stone-800 animate-fade-in flex items-center gap-2">
+        <div className="fixed bottom-5 right-5 z-50 bg-stone-900 dark:bg-stone-800 text-stone-100 text-xs font-medium px-4 py-2.5 rounded-lg shadow-lg border border-stone-800 dark:border-stone-700 animate-fade-in flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Main App Navigation */}
+      {/* Main App Navigation with Dark Theme Toggle */}
       <Header
         orders={orders}
+        isDark={isDark}
+        onToggleTheme={() => setIsDark((prev) => !prev)}
         onOpenAddModal={openAddModalWithTab}
         onOpenAIAdvisor={() => {
-          window.scrollTo({ top: 180, behavior: 'smooth' });
+          window.scrollTo({ top: 160, behavior: 'smooth' });
         }}
         onResetData={handleResetData}
         onExportCSV={handleExportCSV}
       />
 
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Main Container - fully responsive margins and padding */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {/* Metric Summary Cards */}
         <MetricsCards
           orders={orders}
@@ -194,7 +224,7 @@ export default function App() {
           onFilterSource={(src) => setSourceFilter(src)}
         />
 
-        {/* Tabular Orders Management View */}
+        {/* Tabular & Responsive Card Orders Management View */}
         <OrdersTable
           orders={orders}
           onSelectOrder={(ord) => setSelectedOrderDetail(ord)}
@@ -212,10 +242,10 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-stone-200 bg-white py-5 text-center text-xs text-stone-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <footer className="border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 py-4 sm:py-5 text-center text-xs text-stone-500 dark:text-stone-400 transition-colors">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p>© {new Date().getFullYear()} OmniSales · Unified Small Business Order & Decision System</p>
-          <div className="flex items-center gap-4 text-2xs text-stone-400">
+          <div className="flex items-center gap-3 sm:gap-4 text-2xs text-stone-400 dark:text-stone-500 flex-wrap justify-center">
             <span>WhatsApp Ingestion</span>
             <span>·</span>
             <span>Spreadsheets</span>
